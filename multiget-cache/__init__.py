@@ -25,6 +25,7 @@ def clear_cache():
 
 
 def _get_fallback_cache():
+    global fallback_cache
     if fallback_cache is None:
         fallback_cache = threading.local()
         fallback_cache.cache = {}

@@ -2,8 +2,6 @@ import collections
 from .base_cache import BaseCache
 from . import function_tools, get_cache
 
-fallback_cache = None
-
 
 class MultigetCache(BaseCache):
     def __init__(self, inner_f, object_key, argument_key, default_result,
