@@ -26,7 +26,7 @@ class MultigetCacheWrapper(BaseCacheWrapper):
         Pull the return value from the request cache if possible. If not,
         pull the value from calling inner_f, then set the value in request cache
         """
-        key = self.mc_key_for(*args, **kwargs)
+        key = self.get_cache_key(*args, **kwargs)
 
         # Get the value direct from request cache if it's there.
         cache = get_cache()
@@ -72,7 +72,7 @@ class MultigetCacheWrapper(BaseCacheWrapper):
             self.argument_key, self.result_key, self.default_result
         )
         for (args, kwargs), mapped_object in zip(self.argument_tuple_list, mapped_objects):
-            key = self.mc_key_for(*args, **kwargs)
+            key = self.get_cache_key(*args, **kwargs)
             cache[key] = mapped_object
 
         # Reset

@@ -14,19 +14,19 @@ class BaseCacheWrapper(object):
         pull the return value from memcache if possible. If not, pull the
         value from calling inner_f, then set the value in request cache
         and memcache where needed."""
-        key = self.mc_key_for(*args, **kwargs)
+        key = self.get_cache_key(*args, **kwargs)
 
         # Get the value direct from request cache if it's there.
         cache = get_cache()
         if key in cache:
             return cache[key]
         else:
-            key = self.mc_key_for(*args, **kwargs)
+            key = self.get_cache_key(*args, **kwargs)
             result = self.inner_f(*args, **kwargs)
             cache[key] = result
             return result
 
-    def mc_key_for(self, *args, **kwargs):
+    def get_cache_key(self, *args, **kwargs):
         # Convert args to kwargs
         kwargs.update(function_tools.convert_args_to_kwargs(self.inner_f, args))
         args = ()
@@ -55,7 +55,7 @@ class BaseCacheWrapper(object):
     def delete(self, *args):
         """Remove the key from the request cache and from memcache."""
         cache = get_cache()
-        key = self.mc_key_for(*args)
+        key = self.get_cache_key(*args)
         if key in cache:
             del cache[key]
 
