@@ -29,11 +29,12 @@ so MultigetCacheWrapper can turn those N queries into 1 query that populates N e
 ```python
 import multiget_cache
 from multiget_cache.multiget_cache_wrapper import multiget_cached
+from multiget_cache.flask_request_cache import get_request_cache
 from generic_social_network.app import db
 from sqlalchemy import Column, Integer, String
 
 
-multiget_cache.register_cache(multiget_cache.flask_request_cache.get_request_cache)
+multiget_cache.register_cache(get_request_cache)
 
 
 class User(db.Model):
@@ -42,10 +43,11 @@ class User(db.Model):
     user_id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String(512), default='')
 
+    @staticmethod
     @multiget_cached(object_key='user_id')
     def get(id_):
         # id_ will be a list
-        User.query.filter(User.user_id.in_(id_)).all()
+        return User.query.filter(User.user_id.in_(id_)).all()
 
 
 User.get.prime(1); User.get.prime(2); User.get.prime(3)
