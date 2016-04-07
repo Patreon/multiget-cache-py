@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(name='multiget-cache',
-      version='0.0.2',
-      description='Python library for turning N O(1) function calls into 1 O(1) call.',
+      version='0.0.3',
+      description='Python library for turning N function calls into 1 memoized call. Especially useful for SQL optimization.',
       url='http://github.com/Patreon/multiget-cache-py',
       author='Patreon',
       author_email='zach@patreon.com',
