@@ -16,12 +16,11 @@ def get_cache():
     # this is consistent per request, so ensure that this is
     # set once and correct for all contexts.
 
-    # TODO: request_cache isn't priviledged. instead, there's a register_cache function which is used here
     cache = _get_primary_cache()
     if cache is not None:
         return cache
     else:
-        return _get_fallback_cache().cache
+        return _get_fallback_cache()
 
 
 def clear_cache():
@@ -36,7 +35,7 @@ def _get_fallback_cache():
     if fallback_cache is None:
         fallback_cache = threading.local()
         fallback_cache.cache = {}
-    return fallback_cache
+    return fallback_cache.cache
 
 
 def _get_primary_cache():
