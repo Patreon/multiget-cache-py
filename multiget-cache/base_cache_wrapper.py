@@ -1,7 +1,9 @@
-from . import get_cache, function_tools, arg_to_key
+import base64
+
+from . import get_cache, function_tools
 
 
-class BaseCache(object):
+class BaseCacheWrapper(object):
     # TODO: Implement kwargs as well.
     def __init__(self, inner_f):
         self.inner_f = inner_f
@@ -21,7 +23,6 @@ class BaseCache(object):
         else:
             key = self.mc_key_for(*args, **kwargs)
             result = self.inner_f(*args, **kwargs)
-            # TODO: kill bracket access, use .set and enforce the availability of that interface
             cache[key] = result
             return result
 
@@ -32,21 +33,35 @@ class BaseCache(object):
 
         return ':'.join(
             [self.f_prefix] +
-            [arg_to_key(arg) for arg in args] +
-            [arg_to_key(key + str(arg)) for key, arg in sorted(kwargs.items())]
+            [self.arg_to_key(arg) for arg in args] +
+            [self.arg_to_key(key + str(arg)) for key, arg in sorted(kwargs.items())]
         )
+
+    @staticmethod
+    def arg_to_key(arg):
+        if isinstance(arg, int):
+            return str(arg)
+        elif isinstance(arg, str):
+            return base64.b64encode(bytearray(arg, "utf-8")).decode('utf-8')
+        elif isinstance(arg, list):
+            return ','.join([BaseCacheWrapper.arg_to_key(inner_arg) for inner_arg in arg])
+        elif arg is None:
+            # Unlikely to collide with base64 encoded string above
+            return 'value:none'
+        else:
+            print('trying to get a key for', str(arg))
+            raise NotImplemented()
 
     def delete(self, *args):
         """Remove the key from the request cache and from memcache."""
         cache = get_cache()
         key = self.mc_key_for(*args)
         if key in cache:
-            # TODO: kill bracket access, use .delete and enforce the availability of that interface
             del cache[key]
 
 
 def cached():
     def create_wrapper(inner_f):
-        return BaseCache(inner_f)
+        return BaseCacheWrapper(inner_f)
 
     return create_wrapper

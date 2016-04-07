@@ -20,22 +20,24 @@ def get_default_args(func):
     return dict(zip(reversed(args), reversed(defaults)))
 
 
-def get_object_key(object, object_key, object_tuple_key):
+def get_object_key(object_, object_key, object_tuple_key):
     """
 
-    :param object: Object you want to pull a value fron
+    :param object_: Object you want to pull a value fron
     :param object_key: String or list/tuple of strings containing field names you want to generate a key from
+    :param object_tuple_key: A temporary shortcut until we allow dot.path traversal for object_key.
+    Will call getattr(getattr(result, join_table_name), object_key)
     :return:
     """
     if object_tuple_key:
-        object = getattr(object, object_tuple_key)
+        object_ = getattr(object_, object_tuple_key)
     if isinstance(object_key, (list, tuple)):
         return_string = ''
         for element in object_key:
-            return_string += str(getattr(object, element))
+            return_string += str(getattr(object_, element))
             return_string += '_'
         return return_string
-    return str(getattr(object, object_key))
+    return str(getattr(object_, object_key))
 
 
 def get_argument_key(kwargs, argument_key, index):
@@ -102,6 +104,8 @@ def map_arguments_to_objects(kwargs, objects, object_key, object_tuple_key, argu
     :param kwargs: kwargs used to call the multiget function
     :param objects: objects returned from the inner function
     :param object_key: field or set of fields that map to the kwargs provided
+    :param object_tuple_key: A temporary shortcut until we allow dot.path traversal for object_key.
+    Will call getattr(getattr(result, join_table_name), object_key)
     :param argument_key: field or set of fields that map to the objects provided
     :param result_value: Limit the fields returned to this field or set of fields (none = whole object)
     :param default_result: If the inner function returned none for a set of parameters, default to this

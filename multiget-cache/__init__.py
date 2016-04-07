@@ -1,9 +1,14 @@
-import base64
 import threading
 
-from .flask_request_cache import get_request_cache, clear_request_cache
 
 fallback_cache = None
+primary_cache = None
+
+
+def register_cache(cache):
+    """ Either an object conforming to the CacheInterface, or a function which returns one """
+    global primary_cache
+    primary_cache = cache
 
 
 def get_cache():
@@ -12,16 +17,18 @@ def get_cache():
     # set once and correct for all contexts.
 
     # TODO: request_cache isn't priviledged. instead, there's a register_cache function which is used here
-    request_cache = get_request_cache()
-    if request_cache is not None:
-        return request_cache
+    cache = _get_primary_cache()
+    if cache is not None:
+        return cache
     else:
         return _get_fallback_cache().cache
 
 
 def clear_cache():
-    clear_request_cache()
-    _get_fallback_cache().cache = {}
+    cache = _get_primary_cache()
+    if cache is not None:
+        cache.clear()
+    _get_fallback_cache().clear()
 
 
 def _get_fallback_cache():
@@ -32,16 +39,9 @@ def _get_fallback_cache():
     return fallback_cache
 
 
-def arg_to_key(arg):
-    if isinstance(arg, int):
-        return str(arg)
-    elif isinstance(arg, str):
-        return base64.b64encode(bytearray(arg, "utf-8")).decode('utf-8')
-    elif isinstance(arg, list):
-        return ','.join([arg_to_key(inner_arg) for inner_arg in arg])
-    elif arg is None:
-        # Unlikely to collide with base64 encoded string above
-        return 'value:none'
+def _get_primary_cache():
+    global primary_cache
+    if callable(primary_cache):
+        return primary_cache()
     else:
-        print('trying to get a key for', str(arg))
-        raise NotImplemented()
+        return primary_cache

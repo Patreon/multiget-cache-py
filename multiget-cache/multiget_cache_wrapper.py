@@ -1,9 +1,9 @@
 import collections
-from .base_cache import BaseCache
+from .base_cache_wrapper import BaseCacheWrapper
 from . import function_tools, get_cache
 
 
-class MultigetCache(BaseCache):
+class MultigetCacheWrapper(BaseCacheWrapper):
     def __init__(self, inner_f, object_key, argument_key, default_result,
                  result_key, object_tuple_key):
         self.argument_tuple_list = []
@@ -19,7 +19,7 @@ class MultigetCache(BaseCache):
         self.argument_key = argument_key
         if not argument_key:
             self.argument_key = function_tools.get_kwargs_for_function(inner_f)
-        super(MultigetCache, self).__init__(inner_f)
+        super(MultigetCacheWrapper, self).__init__(inner_f)
 
     def __call__(self, *args, **kwargs):
         """
@@ -31,12 +31,10 @@ class MultigetCache(BaseCache):
         # Get the value direct from request cache if it's there.
         cache = get_cache()
         if key in cache:
-            # TODO: kill bracket access, use .get and enforce the availability of that interface
             return cache[key]
         else:
             self.prime(*args, **kwargs)
             self._issue_gets_for_primes()
-            # TODO: kill bracket access, use .get and enforce the availability of that interface
             return cache[key]
 
     def prime(self, *args, **kwargs):
@@ -50,8 +48,8 @@ class MultigetCache(BaseCache):
         # Verify argument count (very light measure)
         if len(kwargs) != function_tools.get_arg_count(self.inner_f):
             raise Exception(
-                'Invalid multiget args: ' + str(kwargs) + ' for function '
-                + str(self.inner_f)
+                'Invalid multiget args: ' + str(kwargs) + ' for function ' +
+                str(self.inner_f)
             )
 
         # Create parallel lists for each kwarg for each object added to the queue
@@ -75,7 +73,6 @@ class MultigetCache(BaseCache):
         )
         for (args, kwargs), mapped_object in zip(self.argument_tuple_list, mapped_objects):
             key = self.mc_key_for(*args, **kwargs)
-            # TODO: kill bracket access, use .set and enforce the availability of that interface
             cache[key] = mapped_object
 
         # Reset
@@ -98,8 +95,9 @@ def multiget_cached(object_key, argument_key=None, default_result=None,
     :return: A wrapper that allows you to queue many O(1) calls and flush the queue all at once,
     rather than executing the inner function body N times.
     """
+
     def create_wrapper(inner_f):
-        return MultigetCache(
+        return MultigetCacheWrapper(
             inner_f, object_key, argument_key, default_result, result_fields,
             join_table_name
         )
