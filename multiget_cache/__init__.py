@@ -34,6 +34,7 @@ def _get_fallback_cache():
     global fallback_cache
     if fallback_cache is None:
         fallback_cache = threading.local()
+    if fallback_cache.cache is None:
         fallback_cache.cache = {}
     return fallback_cache.cache
 
