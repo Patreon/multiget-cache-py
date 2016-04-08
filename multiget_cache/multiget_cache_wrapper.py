@@ -5,13 +5,14 @@ from . import function_tools, get_cache
 
 class MultigetCacheWrapper(BaseCacheWrapper):
     def __init__(self, inner_f, object_key, argument_key, default_result,
-                 result_key, object_tuple_key):
+                 result_key, object_tuple_key, coerce_args_to_strings=False):
         self.argument_tuple_list = []
         self.kwargs_dict = collections.defaultdict(list)
         self.object_key = object_key
         self.result_key = result_key
         self.default_result = default_result
         self.object_tuple_key = object_tuple_key
+        self.coerce_args_to_strings = coerce_args_to_strings
 
         # backwards compatibility
         self.multiget = True
@@ -57,6 +58,8 @@ class MultigetCacheWrapper(BaseCacheWrapper):
             # sometimes we get a list??
             if hasattr(value, 'append'):
                 value = value[0]
+            if self.coerce_args_to_strings:
+                value = str(value)
             self.kwargs_dict[key].append(value)
 
     def _issue_gets_for_primes(self):
