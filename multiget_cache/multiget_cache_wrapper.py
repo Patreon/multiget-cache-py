@@ -84,7 +84,7 @@ class MultigetCacheWrapper(BaseCacheWrapper):
 
 
 def multiget_cached(object_key, argument_key=None, default_result=None,
-                    result_fields=None, join_table_name=None):
+                    result_fields=None, join_table_name=None, coerce_args_to_strings=False):
     """
     :param object_key: the names of the attributes on the result object that are meant to match the function parameters
     :param argument_key: the function parameter names you wish to match with the `object_key`s.
@@ -95,6 +95,8 @@ def multiget_cached(object_key, argument_key=None, default_result=None,
     By default, the whole object is returned.
     :param join_table_name: A temporary shortcut until we allow dot.path traversal for object_key.
     Will call getattr(getattr(result, join_table_name), object_key)
+    :param coerce_args_to_strings: force coerce all arguments to the inner function to strings.
+    Useful for SQL where mixes of ints and strings in `WHERE x IN (list)` clauses causes poor performance.
     :return: A wrapper that allows you to queue many O(1) calls and flush the queue all at once,
     rather than executing the inner function body N times.
     """
@@ -102,7 +104,7 @@ def multiget_cached(object_key, argument_key=None, default_result=None,
     def create_wrapper(inner_f):
         return MultigetCacheWrapper(
             inner_f, object_key, argument_key, default_result, result_fields,
-            join_table_name
+            join_table_name, coerce_args_to_strings=coerce_args_to_strings
         )
 
     return create_wrapper
