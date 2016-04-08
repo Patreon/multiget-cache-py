@@ -51,7 +51,10 @@ def get_argument_key(kwargs, argument_key, index):
     if isinstance(argument_key, (list, tuple)):
         return_string = ''
         for element in argument_key:
-            return_string += str(kwargs.get(element)[index] or '')
+            return_val = kwargs.get(element)[index]
+            if return_val is None:
+                return_val = ''
+            return_string += str(return_val)
             if len(argument_key) > 1:
                 return_string += '_'
         return return_string

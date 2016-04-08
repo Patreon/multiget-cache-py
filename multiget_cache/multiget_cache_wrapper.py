@@ -57,7 +57,7 @@ class MultigetCacheWrapper(BaseCacheWrapper):
             # sometimes we get a list??
             if hasattr(value, 'append'):
                 value = value[0]
-            self.kwargs_dict[key].append(str(value))
+            self.kwargs_dict[key].append(value)
 
     def _issue_gets_for_primes(self):
         cache = get_cache()
