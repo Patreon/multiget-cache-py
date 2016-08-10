@@ -3,12 +3,12 @@ import collections
 
 
 def get_arg_count(func):
-    args, varargs, keywords, defaults = inspect.getargspec(func)
+    args, *rest = inspect.getfullargspec(func)
     return len(args)
 
 
 def convert_args_to_kwargs(func, args):
-    args_names, varargs, keywords, defaults = inspect.getargspec(func)
+    args_names, *rest = inspect.getfullargspec(func)
     return dict(zip(args_names, args))
 
 
@@ -16,7 +16,7 @@ def get_default_args(func):
     """
     returns a dictionary of arg_name:default_values for the input function
     """
-    args, varargs, keywords, defaults = inspect.getargspec(func)
+    args, _, _, defaults, *rest = inspect.getfullargspec(func)
     return dict(zip(reversed(args), reversed(defaults)))
 
 
@@ -125,5 +125,5 @@ def map_arguments_to_objects(kwargs, objects, object_key, object_tuple_key, argu
 
 
 def get_kwargs_for_function(inner_f):
-    args_names, varargs, keywords, defaults = inspect.getargspec(inner_f)
+    args_names, *rest = inspect.getfullargspec(inner_f)
     return args_names
