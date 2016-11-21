@@ -66,7 +66,7 @@ class MultigetCacheWrapper(BaseCacheWrapper):
         cache = get_cache()
 
         # Only call with kwargs because we converted earlier
-        objects = self.inner_f(**self.kwargs_dict)
+        objects = self.inner_f(**{key: list(set(params)) for key, params in self.kwargs_dict.items()})
         # For the objects that were returned, reorder them such that they match
         # the order they were primed in, and if nothing was returned for a set
         # of arguments, use the provided default value
